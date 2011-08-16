@@ -4,8 +4,10 @@
  */
 
 var express = require('express');
+var io = require('socket.io');
 
-var app = module.exports = express.createServer();
+var app = module.exports = express.createServer()
+	, io = io.listen(app);
 
 // Configuration
 
@@ -31,14 +33,23 @@ app.configure('production', function(){
 // Routes
 
 app.get('/', function(req, res){
-  if (!req.session.session) {
-    req.session.webSocket = initialise();
+  if (!req.session.key) {
+    //req.session.key = assignUniqueKey(req);
   }
   
   res.render('index', {
     title: 'Receiver',
-    webSocketKey: req.session.webSocket.Key
+    sessionKey: req.session.Key
   });
+});
+
+// io
+
+io.sockets.on('connection', function(socket) {
+	socket.emit('news', {hello: 'world'});
+	socket.on('my other event', function(data) {
+		console.log(data);
+	});
 });
 
 app.listen(3000);
