@@ -14,6 +14,8 @@ app.configure(function(){
   app.set('view engine', 'jade');
   app.use(express.bodyParser());
   app.use(express.methodOverride());
+  app.use(express.cookieParser());
+  app.use(express.session({ secret: 'your secret here' }));
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
 });
@@ -29,8 +31,13 @@ app.configure('production', function(){
 // Routes
 
 app.get('/', function(req, res){
+  if (!req.session.session) {
+    req.session.webSocket = initialise();
+  }
+  
   res.render('index', {
-    title: 'Express'
+    title: 'Receiver',
+    webSocketKey: req.session.webSocket.Key
   });
 });
 
