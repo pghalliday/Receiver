@@ -2,11 +2,20 @@ h1= title
 p Received data will appear below:
 
 div
+  p key:
+  pre#receivedKeyPre.receivedDataStyle Waiting for key...
+
+div
+  p data:
   pre#receivedDataPre.receivedDataStyle Waiting for data...
 
 script(src='/socket.io/socket.io.js')
 script(type='text/javascript')
   var socket = io.connect('http://localhost');
+  socket.on('newKey', function (data) {
+    var receivedKeyPre = document.getElementById('receivedKeyPre');
+    receivedKeyPre.innerHTML = data;
+  });
   socket.on('newData', function (data) {
     var receivedDataPre = document.getElementById('receivedDataPre');
     receivedDataPre.innerHTML = data;

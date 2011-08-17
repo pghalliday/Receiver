@@ -11,3 +11,8 @@ pre.receivedDataStyle {
   padding: 5px;
   background-color: #EEE; 
 }
+
+textarea.newDataStyle {
+  padding: 5px;
+  background-color: #EEE;
+}

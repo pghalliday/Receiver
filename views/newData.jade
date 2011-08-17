@@ -1,0 +1,12 @@
+h1= title
+p Enter data to send:
+
+form(method='post', action='/newData')
+  p key:
+  p
+    input(type='text', name='key')
+  p data:
+  p
+    textarea.newDataStyle(name='newData', rows='4', cols='20')
+  p
+    input(type='submit') Send

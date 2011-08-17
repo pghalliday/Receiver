@@ -6,6 +6,9 @@
 var express = require('express');
 var io = require('socket.io');
 
+var sockets = {};
+var keys = {};
+
 var app = module.exports = express.createServer()
 	, io = io.listen(app);
 
@@ -38,11 +41,39 @@ app.get('/', function(req, res){
   });
 });
 
+app.get('/newData', function(req, res){
+  res.render('newData', {
+    title: 'Receiver'
+  });
+});
+
+app.post('/newData', function(req, res){
+  var socket = sockets[req.body.key];
+  if (socket) {
+    socket.emit('newData', req.body.newData);
+  }
+  res.redirect('back');
+});
+
 // io
 
 io.sockets.on('connection', function(socket) {
-	socket.emit('newData', 'This is a test\n\tand this should be on a new line and indented');
+  var key = generateUniqueKey(sockets.keys);
+  keys[socket] = key;
+  sockets[key] = socket;
+  socket.emit('newKey', key);
 });
+
+io.sockets.on('disconnect', function(socket) {
+  sockets[keys[socket]] = null;
+  keys[socket] = null;
+});
+
+// utils
+
+function generateUniqueKey(existingKeys) {
+  return 'fgst';
+}
 
 app.listen(3000);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
