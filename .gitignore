@@ -1,5 +1,6 @@
 .DS_Store
 *.js~
 *.jade~
+*.css~
 node_modules
 

@@ -33,23 +33,15 @@ app.configure('production', function(){
 // Routes
 
 app.get('/', function(req, res){
-  if (!req.session.key) {
-    //req.session.key = assignUniqueKey(req);
-  }
-  
   res.render('index', {
-    title: 'Receiver',
-    sessionKey: req.session.Key
+    title: 'Receiver'
   });
 });
 
 // io
 
 io.sockets.on('connection', function(socket) {
-	socket.emit('news', {hello: 'world'});
-	socket.on('my other event', function(data) {
-		console.log(data);
-	});
+	socket.emit('newData', 'This is a test\n\tand this should be on a new line and indented');
 });
 
 app.listen(3000);
