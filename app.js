@@ -7,7 +7,6 @@ var express = require('express');
 var io = require('socket.io');
 
 var sockets = {};
-var keys = {};
 
 var app = module.exports = express.createServer()
 	, io = io.listen(app);
@@ -49,34 +48,41 @@ app.get('/newData', function(req, res){
 
 app.post('/newData', function(req, res){
   console.log('post /newData: key: "' + req.body.key + '": newData: "' + req.body.newData + '"');
+
   var socket = sockets[req.body.key];
+
   if (socket) {
-    console.log('post /newData: socket: "' + socket + '"');
+    console.log('post /newData: socket.internalKey: "' + socket.internalKey + '"');
     socket.emit('newData', req.body.newData);
   }
+
   res.redirect('back');
 });
 
 // io
 
 io.sockets.on('connection', function(socket) {
-  var key = generateUniqueKey(sockets.keys);
-  keys[socket] = key;
-  sockets[key] = socket;
-  console.log('on connection: socket: "' + socket + '": key: "' + key + '"');
-  socket.emit('newKey', key);
-});
+  var newKey = getKey();
+  sockets[newKey] = socket;
 
-io.sockets.on('disconnect', function(socket) {
-  console.log('on disconnect: socket: "' + socket + '": key: "' + keys[socket] + '"');
-  sockets[keys[socket]] = null;
-  keys[socket] = null;
+  console.log('on connection: newKey: "' + newKey + '"');
+
+  socket.emit('newKey', newKey);
+
+  socket.on('disconnect', function() {
+    console.log('on disconnect: newKey: "' + newKey + '"');
+    delete(sockets[newKey]);
+    returnKey(newKey);
+  });
 });
 
 // utils
 
-function generateUniqueKey(existingKeys) {
-  return 'fgst';
+function getKey() {
+  return (new Date()).toTimeString();
+}
+
+function returnKey(key) {
 }
 
 app.listen(3000);
