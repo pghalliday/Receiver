@@ -32,13 +32,12 @@ function KeyStore(keyLength, maxConcurrentKeys, validCharacters) {
     for (var i = 0; i < maxConcurrentKeys; i++) {
         this.keyOrdinals[i] = i;
     }
-    for (var i = 0; i < maxConcurrentKeys; i++) {
+    for (var i = 0; i < maxConcurrentKeys - 1; i++) {
         swapIndex = Math.floor(Math.random() * (maxConcurrentKeys - i)) + i;
 		swapValue = this.keyOrdinals[i]
         this.keyOrdinals[i] = this.keyOrdinals[swapIndex];
         this.keyOrdinals[swapIndex] = swapValue;
     }
-	console.log(this.keyOrdinals);
     this.keyOrdinalMap = new Object();
     this.keyOrdinalInterval = Math.floor(keyCount / maxConcurrentKeys);
     this.keyOrdinalOffset = 0;

@@ -9,7 +9,7 @@ try {
 
     var sockets = {};
 
-    var keyStore = new KeyStore(6, 50000, [
+    var keyStore = new KeyStore(6, 3, [
     'a',
     'b',
     'c',
@@ -37,6 +37,7 @@ try {
     'y',
     'z'
     ]);
+	console.info('Generated key store');
 
     var app = module.exports = express.createServer()
     ,
@@ -102,22 +103,27 @@ try {
     io.sockets.on('connection',
     function(socket) {
         var newKey = keyStore.getKey();
-        sockets[newKey] = socket;
 
-        console.log('on connection: newKey: "' + newKey + '"');
+        if (newKey != null) {
+            sockets[newKey] = socket;
 
-        socket.emit('newKey', newKey);
+            console.log('on connection: newKey: "' + newKey + '"');
 
-        socket.on('disconnect',
-        function() {
-            console.log('on disconnect: newKey: "' + newKey + '"');
-            delete(sockets[newKey]);
-            keyStore.returnKey(newKey);
-        });
+            socket.emit('newKey', newKey);
+
+            socket.on('disconnect',
+            function() {
+                console.log('on disconnect: newKey: "' + newKey + '"');
+                delete(sockets[newKey]);
+                keyStore.returnKey(newKey);
+            });
+        } else {
+            socket.emit('noKeys');
+        }
     });
 
     app.listen(3000);
-    console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+    console.info("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 } catch(e) {
-    console.log("Error:", e);
+    console.error("Error:", e);
 }
