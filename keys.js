@@ -66,10 +66,13 @@ KeyStore.prototype.getKey = function() {
 };
 
 KeyStore.prototype.returnKey = function(key) {
-    if (this.keyOrdinalMap[key]) {
+    if (this.keyOrdinalMap[key] != null) {
         this.keyOrdinals[this.currentReturnKeyOrdinalIndex] = this.keyOrdinalMap[key];
         delete(this.keyOrdinalMap[key]);
         this.currentReturnKeyOrdinalIndex++;
+        if (this.currentReturnKeyOrdinalIndex >= this.maxConcurrentKeys) {
+            this.currentReturnKeyOrdinalIndex = 0;
+        }
         this.keysOutCount--;
     }
 };
