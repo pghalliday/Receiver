@@ -9,7 +9,7 @@ try {
 
     var sockets = {};
 
-    var keyStore = new KeyStore(6, 3, [
+    var keyStore = new KeyStore(6, [
     'a',
     'b',
     'c',
@@ -37,7 +37,7 @@ try {
     'y',
     'z'
     ]);
-	console.info('Generated key store');
+	console.info('Initialised key store');
 
     var app = module.exports = express.createServer()
     ,

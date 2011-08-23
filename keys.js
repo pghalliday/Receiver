@@ -6,59 +6,54 @@ function KeyStoreException(summary, detail) {
     this.detail = detail;
 }
 
-function KeyStore(keyLength, maxConcurrentKeys, validCharacters) {
+function KeyStore(keyLength, validCharacters) {
     this.keyLength = keyLength;
-    this.maxConcurrentKeys = maxConcurrentKeys;
     this.validCharacters = validCharacters.slice(0);
 
     // initialise array of valid key ordinals, etc
-    var keyCount = Math.pow(validCharacters.length, keyLength);
-    if (keyCount == Number.MAX_VALUE) {
+    this.keyCount = Math.pow(validCharacters.length, keyLength);
+    if (this.keyCount == Number.MAX_VALUE) {
         throw new KeyStoreException('Too many keys', 'the total number of possible keys is equal to or exceeds the maximum number value');
     }
-    if (keyCount == Number.POSITIVE_INFINITY) {
+    if (this.keyCount == Number.POSITIVE_INFINITY) {
         throw new KeyStoreException('Infinite keys', 'the total number of possible keys seems to be positive infinity... which is odd');
     }
-    if (keyCount == Number.NaN) {
+    if (this.keyCount == Number.NaN) {
         throw new KeyStoreException('Undefined number of keys', 'the total number of possible keys is not a number... which is odd');
     }
-    if (maxConcurrentKeys > keyCount) {
-        throw new KeyStoreException('Too many concurrent keys', 'The maximum number of concurrent keys is greater than the total number of possible keys');
-    }
 
-    this.keyOrdinals = new Array(maxConcurrentKeys);
-	var swapIndex = 0;
-	var swapValue = 0;
-    for (var i = 0; i < maxConcurrentKeys; i++) {
-        this.keyOrdinals[i] = i;
-    }
-    for (var i = 0; i < maxConcurrentKeys - 1; i++) {
-        swapIndex = Math.floor(Math.random() * (maxConcurrentKeys - i)) + i;
-		swapValue = this.keyOrdinals[i]
-        this.keyOrdinals[i] = this.keyOrdinals[swapIndex];
-        this.keyOrdinals[swapIndex] = swapValue;
-    }
+    this.keyOrdinals = new Array(this.keyCount);
     this.keyOrdinalMap = new Object();
-    this.keyOrdinalInterval = Math.floor(keyCount / maxConcurrentKeys);
-    this.keyOrdinalOffset = 0;
     this.currentGetKeyOrdinalIndex = 0;
     this.currentReturnKeyOrdinalIndex = 0;
+    this.randomizationComplete = false;
     this.keysOutCount = 0;
 };
 
 KeyStore.prototype.getKey = function() {
     var key = null;
-    if (this.keysOutCount < this.maxConcurrentKeys) {
-        var keyNumeral = (this.keyOrdinals[this.currentGetKeyOrdinalIndex] * this.keyOrdinalInterval) + this.keyOrdinalOffset;
-        key = this.generateKey(keyNumeral);
+    if (this.keysOutCount < this.keyCount) {
+    	
+    	  // randomize the keys if not already done
+    	  if (!this.randomizationComplete) {
+    	  		var swapIndex = Math.floor(Math.random() * (this.keyCount - this.currentGetKeyOrdinalIndex)) + this.currentGetKeyOrdinalIndex;
+    	  		var swapValue = swapIndex;
+    	  		if (this.keyOrdinals[swapIndex] != null) {
+    	  			swapValue = this.keyOrdinals[swapIndex];
+    	  		}
+    	  		if (this.keyOrdinals[this.currentGetKeyOrdinalIndex] == null) {
+    	  			this.keyOrdinals[this.currentGetKeyOrdinalIndex] = this.currentGetKeyOrdinalIndex;
+    	  		}
+    	  		this.keyOrdinals[swapIndex] = this.keyOrdinals[this.currentGetKeyOrdinalIndex];
+    	  		this.keyOrdinals[this.currentGetKeyOrdinalIndex] = swapValue;
+    	  		this.randomizationComplete = (this.currentGetKeyOrdinalIndex == (this.keyCount - 1));
+    	  }
+    	  
+        key = this.generateKey(this.keyOrdinals[this.currentGetKeyOrdinalIndex]);
         this.keyOrdinalMap[key] = this.keyOrdinals[this.currentGetKeyOrdinalIndex];
         this.currentGetKeyOrdinalIndex++;
-        if (this.currentGetKeyOrdinalIndex >= this.maxConcurrentKeys) {
+        if (this.currentGetKeyOrdinalIndex >= this.keyCount) {
             this.currentGetKeyOrdinalIndex = 0;
-            this.keyOrdinalOffset++;
-            if (this.keyOrdinalOffset >= this.keyOrdinalInterval) {
-                this.keyOrdinalOffset = 0;
-            }
         }
         this.keysOutCount++;
     }
@@ -70,17 +65,17 @@ KeyStore.prototype.returnKey = function(key) {
         this.keyOrdinals[this.currentReturnKeyOrdinalIndex] = this.keyOrdinalMap[key];
         delete(this.keyOrdinalMap[key]);
         this.currentReturnKeyOrdinalIndex++;
-        if (this.currentReturnKeyOrdinalIndex >= this.maxConcurrentKeys) {
+        if (this.currentReturnKeyOrdinalIndex >= this.keyCount) {
             this.currentReturnKeyOrdinalIndex = 0;
         }
         this.keysOutCount--;
     }
 };
 
-KeyStore.prototype.generateKey = function(keyNumeral) {
+KeyStore.prototype.generateKey = function(keyOrdinal) {
     var key = "";
     var characterIndex = 0;
-    var remainder = keyNumeral;
+    var remainder = keyOrdinal;
     var divisor = 0;
     var length = this.validCharacters.length;
     for (var i = this.keyLength - 1; i > 0; i--) {
