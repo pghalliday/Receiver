@@ -11,7 +11,7 @@ div
 
 script(src='/socket.io/socket.io.js')
 script(type='text/javascript')
-  var socket = io.connect('http://localhost');
+  var socket = io.connect();
   socket.on('noKeys', function () {
     var receivedKeyPre = document.getElementById('receivedKeyPre');
     receivedKeyPre.innerHTML = 'No keys currently available, please try again later...';
