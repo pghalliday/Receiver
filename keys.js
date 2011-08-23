@@ -33,22 +33,22 @@ function KeyStore(keyLength, validCharacters) {
 KeyStore.prototype.getKey = function() {
     var key = null;
     if (this.keysOutCount < this.keyCount) {
-    	
-    	  // randomize the keys if not already done
-    	  if (!this.randomizationComplete) {
-    	  		var swapIndex = Math.floor(Math.random() * (this.keyCount - this.currentGetKeyOrdinalIndex)) + this.currentGetKeyOrdinalIndex;
-    	  		var swapValue = swapIndex;
-    	  		if (this.keyOrdinals[swapIndex] != null) {
-    	  			swapValue = this.keyOrdinals[swapIndex];
-    	  		}
-    	  		if (this.keyOrdinals[this.currentGetKeyOrdinalIndex] == null) {
-    	  			this.keyOrdinals[this.currentGetKeyOrdinalIndex] = this.currentGetKeyOrdinalIndex;
-    	  		}
-    	  		this.keyOrdinals[swapIndex] = this.keyOrdinals[this.currentGetKeyOrdinalIndex];
-    	  		this.keyOrdinals[this.currentGetKeyOrdinalIndex] = swapValue;
-    	  		this.randomizationComplete = (this.currentGetKeyOrdinalIndex == (this.keyCount - 1));
-    	  }
-    	  
+
+        // randomize the keys if not already done
+        if (!this.randomizationComplete) {
+            var swapIndex = Math.floor(Math.random() * (this.keyCount - this.currentGetKeyOrdinalIndex)) + this.currentGetKeyOrdinalIndex;
+            var swapValue = swapIndex;
+            if (this.keyOrdinals[swapIndex] != null) {
+                swapValue = this.keyOrdinals[swapIndex];
+            }
+            if (this.keyOrdinals[this.currentGetKeyOrdinalIndex] == null) {
+                this.keyOrdinals[this.currentGetKeyOrdinalIndex] = this.currentGetKeyOrdinalIndex;
+            }
+            this.keyOrdinals[swapIndex] = this.keyOrdinals[this.currentGetKeyOrdinalIndex];
+            this.keyOrdinals[this.currentGetKeyOrdinalIndex] = swapValue;
+            this.randomizationComplete = (this.currentGetKeyOrdinalIndex == (this.keyCount - 1));
+        }
+
         key = this.generateKey(this.keyOrdinals[this.currentGetKeyOrdinalIndex]);
         this.keyOrdinalMap[key] = this.keyOrdinals[this.currentGetKeyOrdinalIndex];
         this.currentGetKeyOrdinalIndex++;
@@ -85,5 +85,5 @@ KeyStore.prototype.generateKey = function(keyOrdinal) {
         key += this.validCharacters[characterIndex];
     }
     key += this.validCharacters[remainder];
-	return key;
+    return key;
 };

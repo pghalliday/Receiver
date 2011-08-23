@@ -37,7 +37,7 @@ try {
     'y',
     'z'
     ]);
-	console.info('Initialised key store');
+    console.info('Initialised key store');
 
     var app = module.exports = express.createServer()
     ,
