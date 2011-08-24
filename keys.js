@@ -12,14 +12,8 @@ function KeyStore(keyLength, validCharacters) {
 
     // initialise array of valid key ordinals, etc
     this.keyCount = Math.pow(validCharacters.length, keyLength);
-    if (this.keyCount == Number.MAX_VALUE) {
-        throw new KeyStoreException('Too many keys', 'the total number of possible keys is equal to or exceeds the maximum number value');
-    }
     if (this.keyCount == Number.POSITIVE_INFINITY) {
-        throw new KeyStoreException('Infinite keys', 'the total number of possible keys seems to be positive infinity... which is odd');
-    }
-    if (this.keyCount == Number.NaN) {
-        throw new KeyStoreException('Undefined number of keys', 'the total number of possible keys is not a number... which is odd');
+        throw new KeyStoreException('Too many permutations', 'the total number of possible keys is too high');
     }
 
     this.keyOrdinals = [];
