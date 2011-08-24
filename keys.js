@@ -22,53 +22,58 @@ function KeyStore(keyLength, validCharacters) {
         throw new KeyStoreException('Undefined number of keys', 'the total number of possible keys is not a number... which is odd');
     }
 
-    this.keyOrdinals = new Array(this.keyCount);
-    this.keyOrdinalMap = new Object();
-    this.currentGetKeyOrdinalIndex = 0;
-    this.currentReturnKeyOrdinalIndex = 0;
-    this.randomizationComplete = false;
-    this.keysOutCount = 0;
+    this.keyOrdinals = [];
+    this.keyOrdinalsInUse = {};
+    this.keyOrdinalsInUseCount = 0;
+    this.assignKeyOrdinalIndex = 0;
+    this.unassignKeyOrdinalIndex = 0;
 };
 
-KeyStore.prototype.getKey = function() {
+KeyStore.prototype.assignKey = function() {
     var key = null;
-    if (this.keysOutCount < this.keyCount) {
+    if (this.keyOrdinalsInUseCount < this.keyCount) {
 
-        // randomize the keys if not already done
-        if (!this.randomizationComplete) {
-            var swapIndex = Math.floor(Math.random() * (this.keyCount - this.currentGetKeyOrdinalIndex)) + this.currentGetKeyOrdinalIndex;
-            var swapValue = swapIndex;
-            if (this.keyOrdinals[swapIndex] != null) {
-                swapValue = this.keyOrdinals[swapIndex];
-            }
-            if (this.keyOrdinals[this.currentGetKeyOrdinalIndex] == null) {
-                this.keyOrdinals[this.currentGetKeyOrdinalIndex] = this.currentGetKeyOrdinalIndex;
-            }
-            this.keyOrdinals[swapIndex] = this.keyOrdinals[this.currentGetKeyOrdinalIndex];
-            this.keyOrdinals[this.currentGetKeyOrdinalIndex] = swapValue;
-            this.randomizationComplete = (this.currentGetKeyOrdinalIndex == (this.keyCount - 1));
+        // always pick a random key from those not currently in use and reserve it
+        var swapKeyOrdinal = this.keyOrdinals[this.assignKeyOrdinalIndex];
+        var assignRangeSize = (((this.keyCount + this.unassignKeyOrdinalIndex - this.assignKeyOrdinalIndex) - 1) % this.keyCount) + 1;
+        var swapIndex = (Math.floor(Math.random() * assignRangeSize) + this.assignKeyOrdinalIndex) % this.keyCount;
+        
+        keyOrdinal = this.keyOrdinals[swapIndex];
+        
+        // initialise keys that haven't been initilaised yet
+        if (keyOrdinal == null) {
+            keyOrdinal = swapIndex;
         }
-
-        key = this.generateKey(this.keyOrdinals[this.currentGetKeyOrdinalIndex]);
-        this.keyOrdinalMap[key] = this.keyOrdinals[this.currentGetKeyOrdinalIndex];
-        this.currentGetKeyOrdinalIndex++;
-        if (this.currentGetKeyOrdinalIndex >= this.keyCount) {
-            this.currentGetKeyOrdinalIndex = 0;
-        }
-        this.keysOutCount++;
+        if (swapKeyOrdinal == null) {
+            swapKeyOrdinal = this.assignKeyOrdinalIndex;
+        }        
+        this.keyOrdinals[swapIndex] = swapKeyOrdinal;
+        this.keyOrdinals[this.assignKeyOrdinalIndex] = keyOrdinal;
+        
+        // move to the next key for the next call to assignKey
+        this.assignKeyOrdinalIndex++;
+        this.assignKeyOrdinalIndex %= this.keyCount;
+        
+        // generate the key from the ordinal and record it as in use
+        key = this.generateKey(keyOrdinal);
+        this.keyOrdinalsInUse[key] = keyOrdinal;
+        this.keyOrdinalsInUseCount++;
     }
-    return key;
+   return key;
 };
 
-KeyStore.prototype.returnKey = function(key) {
-    if (this.keyOrdinalMap[key] != null) {
-        this.keyOrdinals[this.currentReturnKeyOrdinalIndex] = this.keyOrdinalMap[key];
-        delete(this.keyOrdinalMap[key]);
-        this.currentReturnKeyOrdinalIndex++;
-        if (this.currentReturnKeyOrdinalIndex >= this.keyCount) {
-            this.currentReturnKeyOrdinalIndex = 0;
-        }
-        this.keysOutCount--;
+KeyStore.prototype.unassignKey = function(key) {
+    // first check if the key is in use
+    if (this.keyOrdinalsInUse[key] != null) {
+        // return the ordinal to the ordinals array
+        this.keyOrdinals[this.unassignKeyOrdinalIndex] = this.keyOrdinalsInUse[key];
+        // unmark the ordinal as in use
+        delete(this.keyOrdinalsInUse[key]);
+        this.keyOrdinalsInUseCount--;
+        
+        // move to the next key for the next call to unassignKey
+        this.unassignKeyOrdinalIndex++;
+        this.unassignKeyOrdinalIndex %= this.keyCount;
     }
 };
 

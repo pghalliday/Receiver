@@ -2,11 +2,11 @@
  * Module dependencies.
  */
 
-try {
-    var express = require('express');
-    var io = require('socket.io');
-    var KeyStore = require('./keys.js').KeyStore;
+var express = require('express');
+var io = require('socket.io');
+var KeyStore = require('./keys.js').KeyStore;
 
+try {
     var sockets = {};
 
     var keyStore = new KeyStore(6, [
@@ -92,7 +92,7 @@ try {
         var socket = sockets[req.body.key];
 
         if (socket) {
-            console.log('post /newData: socket.internalKey: "' + socket.internalKey + '"');
+            console.log('post /newData: emitting newData: "' + req.body.newData + '"');
             socket.emit('newData', req.body.newData);
         }
 
@@ -102,22 +102,22 @@ try {
     // io
     io.sockets.on('connection',
     function(socket) {
-        var newKey = keyStore.getKey();
+        var newKey = keyStore.assignKey();
 
         if (newKey != null) {
             sockets[newKey] = socket;
 
-            console.log('on connection: newKey: "' + newKey + '"');
-
+            console.log('on connection: emitting newKey: "' + newKey + '"');
             socket.emit('newKey', newKey);
 
             socket.on('disconnect',
             function() {
                 console.log('on disconnect: newKey: "' + newKey + '"');
                 delete(sockets[newKey]);
-                keyStore.returnKey(newKey);
+                keyStore.unassignKey(newKey);
             });
         } else {
+            console.log('on connection: emitting noKeys');
             socket.emit('noKeys');
         }
     });
