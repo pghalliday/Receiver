@@ -1,19 +1,20 @@
-// Generates unique random keys of fixed length and from a fixed set of characters
-exports.KeyStore = KeyStore;
+exports.RandomUniqueFixedLengthKeysException = RandomUniqueFixedLengthKeysException;
+exports.RandomUniqueFixedLengthKeys = RandomUniqueFixedLengthKeys;
 
-function KeyStoreException(summary, detail) {
+function RandomUniqueFixedLengthKeysException(summary, detail) {
     this.summary = summary;
     this.detail = detail;
 }
 
-function KeyStore(keyLength, validCharacters) {
+// Generates unique random keys of fixed length and from a fixed set of characters
+function RandomUniqueFixedLengthKeys(keyLength, validCharacters) {
     this.keyLength = keyLength;
-    this.validCharacters = validCharacters.slice(0);
+    this.validCharacters = new String(validCharacters);
 
     // initialise array of valid key ordinals, etc
     this.keyCount = Math.pow(validCharacters.length, keyLength);
     if (this.keyCount == Number.POSITIVE_INFINITY) {
-        throw new KeyStoreException('Too many permutations', 'the total number of possible keys is too high');
+        throw new RandomUniqueFixedLengthKeysException('Too many permutations', 'the total number of possible keys is too high');
     }
 
     this.keyOrdinals = [];
@@ -23,7 +24,7 @@ function KeyStore(keyLength, validCharacters) {
     this.unassignKeyOrdinalIndex = 0;
 };
 
-KeyStore.prototype.assignKey = function() {
+RandomUniqueFixedLengthKeys.prototype.assignKey = function() {
     var key = null;
     if (this.keyOrdinalsInUseCount < this.keyCount) {
 
@@ -34,7 +35,7 @@ KeyStore.prototype.assignKey = function() {
         
         keyOrdinal = this.keyOrdinals[swapIndex];
         
-        // initialise keys that haven't been initilaised yet
+        // initialise keys that haven't been initialised yet
         if (keyOrdinal == null) {
             keyOrdinal = swapIndex;
         }
@@ -56,7 +57,7 @@ KeyStore.prototype.assignKey = function() {
    return key;
 };
 
-KeyStore.prototype.unassignKey = function(key) {
+RandomUniqueFixedLengthKeys.prototype.unassignKey = function(key) {
     // first check if the key is in use
     if (this.keyOrdinalsInUse[key] != null) {
         // return the ordinal to the ordinals array
@@ -71,7 +72,7 @@ KeyStore.prototype.unassignKey = function(key) {
     }
 };
 
-KeyStore.prototype.generateKey = function(keyOrdinal) {
+RandomUniqueFixedLengthKeys.prototype.generateKey = function(keyOrdinal) {
     var key = "";
     var characterIndex = 0;
     var remainder = keyOrdinal;
@@ -81,8 +82,8 @@ KeyStore.prototype.generateKey = function(keyOrdinal) {
         divisor = Math.pow(length, i);
         characterIndex = Math.floor(remainder / divisor);
         remainder -= (divisor * characterIndex);
-        key += this.validCharacters[characterIndex];
+        key += this.validCharacters.charAt(characterIndex);
     }
-    key += this.validCharacters[remainder];
+    key += this.validCharacters.charAt(remainder);
     return key;
 };

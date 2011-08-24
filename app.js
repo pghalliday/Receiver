@@ -4,39 +4,12 @@
 
 var express = require('express');
 var io = require('socket.io');
-var KeyStore = require('./keys.js').KeyStore;
+var RandomUniqueFixedLengthKeys = require('./keys.js').RandomUniqueFixedLengthKeys;
 
 try {
     var sockets = {};
 
-    var keyStore = new KeyStore(6, [
-    'a',
-    'b',
-    'c',
-    'd',
-    'e',
-    'f',
-    'g',
-    'h',
-    'i',
-    'j',
-    'k',
-    'l',
-    'm',
-    'n',
-    'o',
-    'p',
-    'q',
-    'r',
-    's',
-    't',
-    'u',
-    'v',
-    'w',
-    'x',
-    'y',
-    'z'
-    ]);
+    var keys = new RandomUniqueFixedLengthKeys(6, 'abcdefghijklmnopqrstuvwxyz');
     console.info('Initialised key store');
 
     var app = module.exports = express.createServer()
@@ -102,7 +75,7 @@ try {
     // io
     io.sockets.on('connection',
     function(socket) {
-        var newKey = keyStore.assignKey();
+        var newKey = keys.assignKey();
 
         if (newKey != null) {
             sockets[newKey] = socket;
@@ -114,7 +87,7 @@ try {
             function() {
                 console.log('on disconnect: newKey: "' + newKey + '"');
                 delete(sockets[newKey]);
-                keyStore.unassignKey(newKey);
+                keys.unassignKey(newKey);
             });
         } else {
             console.log('on connection: emitting noKeys');
