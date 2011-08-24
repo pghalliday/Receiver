@@ -32,29 +32,29 @@ RandomUniqueFixedLengthKeys.prototype.assignKey = function() {
         var swapKeyOrdinal = this.keyOrdinals[this.assignKeyOrdinalIndex];
         var assignRangeSize = (((this.keyCount + this.unassignKeyOrdinalIndex - this.assignKeyOrdinalIndex) - 1) % this.keyCount) + 1;
         var swapIndex = (Math.floor(Math.random() * assignRangeSize) + this.assignKeyOrdinalIndex) % this.keyCount;
-        
+
         keyOrdinal = this.keyOrdinals[swapIndex];
-        
+
         // initialise keys that haven't been initialised yet
         if (keyOrdinal == null) {
             keyOrdinal = swapIndex;
         }
         if (swapKeyOrdinal == null) {
             swapKeyOrdinal = this.assignKeyOrdinalIndex;
-        }        
+        }
         this.keyOrdinals[swapIndex] = swapKeyOrdinal;
         this.keyOrdinals[this.assignKeyOrdinalIndex] = keyOrdinal;
-        
+
         // move to the next key for the next call to assignKey
         this.assignKeyOrdinalIndex++;
         this.assignKeyOrdinalIndex %= this.keyCount;
-        
+
         // generate the key from the ordinal and record it as in use
         key = this.generateKey(keyOrdinal);
         this.keyOrdinalsInUse[key] = keyOrdinal;
         this.keyOrdinalsInUseCount++;
     }
-   return key;
+    return key;
 };
 
 RandomUniqueFixedLengthKeys.prototype.unassignKey = function(key) {
@@ -65,7 +65,7 @@ RandomUniqueFixedLengthKeys.prototype.unassignKey = function(key) {
         // unmark the ordinal as in use
         delete(this.keyOrdinalsInUse[key]);
         this.keyOrdinalsInUseCount--;
-        
+
         // move to the next key for the next call to unassignKey
         this.unassignKeyOrdinalIndex++;
         this.unassignKeyOrdinalIndex %= this.keyCount;
